@@ -48,7 +48,7 @@ export default function StudentHome() {
               <div className="flex flex-col md:flex-row items-center gap-4">
                 {/* Link to "New received quizzes" */}
                 <Link
-                  to="/quiz_header"  // Navigate to the new quizzes page
+                  to="/student/new-quizzes"  // Navigate to the new quizzes page
                   className="bg-[#3791b4] hover:bg-[#2d7a96] text-white font-medium py-2 px-6 rounded transition-colors"
                 >
                   New received quizzes

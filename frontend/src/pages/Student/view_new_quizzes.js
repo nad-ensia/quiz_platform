@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function ViewQuizzes() {
+export default function ViewNewQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -103,7 +103,7 @@ export default function ViewQuizzes() {
         const sampleQuizzes = Array(10).fill(null).map((_, index) => ({
           id: index + 1,
           title: `Quiz 01`,
-          date: `${10 + index}/20`, 
+          date: `12/12/2025, 10PM`, 
         }));
         setQuizzes(sampleQuizzes);
         setLoading(false);
@@ -128,14 +128,14 @@ export default function ViewQuizzes() {
 
         <div style={styles.header}>
           <div style={styles.titleHeader}>Quiz Title</div>
-          <div style={styles.dateHeader}>Score</div>
+          <div style={styles.dateHeader}>Deadline</div>
         </div>
 
         <div style={styles.quizList}>
           {quizzes.map((quiz) => (
             <div key={quiz.id} style={styles.quizItem}>
               <a
-                href={`/quiz/quiz`}
+                href={`/quiz`}
                 style={styles.quizLinkWrapper}
                 onMouseOver={(e) => {
                   e.currentTarget.style.backgroundColor = '#f5f5f5';
