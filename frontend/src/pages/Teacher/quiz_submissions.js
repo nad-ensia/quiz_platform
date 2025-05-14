@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 
 export default function QuizDetails() {
   const [students, setStudents] = useState([]);
@@ -119,7 +120,9 @@ export default function QuizDetails() {
               <div style={styles.studentName}>{student.name}</div>
               <div style={styles.studentScore}>{student.score}</div>
               <div style={styles.column}>
+                <Link to="/teacher/quiz-answers">
                 <button style={styles.seeAnswerButton}>See Answers</button>
+                </Link>
               </div>
             </div>
           ))}

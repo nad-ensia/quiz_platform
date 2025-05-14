@@ -14,7 +14,9 @@ import Submissions from './pages/Teacher/quiz_submissions';
 import Quiz_Createion from './components/Teacher/quizz_creator'
 import MetaData from './components/Teacher/quiz_metadata';
 import QuizHeader from './components/Teacher/quiz_header';
-
+import ViewQuizResults from './pages/Student/view_quiz_results';
+import ViewNewQuizzes from './pages/Student/view_new_quizzes';
+import QuizAnswers from './pages/Teacher/quiz_answers';
 
 
 import './index.css';
@@ -32,10 +34,13 @@ function App() {
         <Route path="/quiz_submissions" element={<Submissions />} />
         <Route path="/second_quiz_creator" element={<Quiz_Createion />} />
         <Route path="/quiz_metadata" element={<MetaData />} />
-        <Route path="/quiz_header" element={<QuizHeader />} />
+        <Route path="/quiz" element={<QuizHeader />} />
         <Route path="/popup" element={<AccessPopup />} />
         <Route path="/mcq" element={<CheckboxQuestion />} />
         <Route path="/radio" element={<RadioButtonQuestion />} />
+        <Route path="/quiz/quiz-results" element={<ViewQuizResults />} />
+        <Route path="/student/new-quizzes" element={<ViewNewQuizzes />} />
+        <Route path="/teacher/quiz-answers" element={<QuizAnswers />} />
 
 
       </Routes>
