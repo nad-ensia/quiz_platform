@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import QMark from '../../assets/images/qmark_login.svg';
 import AttachFile from '../../assets/attach_file.svg';
@@ -7,19 +7,12 @@ export default function QuizLoginPage() {
   const [role, setRole] = useState('');
   const [idCard, setIdCard] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [errors, setErrors] = useState({ role: '', idCard: '', password: '' });
 
-  const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const roles = ['Student', 'Teacher'];
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setIdCard(file.name);
-    }
-  };
 
   const validateForm = () => {
     const newErrors = {
@@ -112,33 +105,29 @@ export default function QuizLoginPage() {
               {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
             </div>
 
-            {/* ID Card file input */}
+            {/* ID card input */}
             <div className="mb-6">
-              <div
-                className={`w-full p-4 bg-softblue/5 rounded flex items-center text-oceanblue border cursor-pointer ${
+              <input
+                type="password"
+                placeholder="RFID"
+                value={idCard}
+                onChange={(e) => {
+                  setIdCard(e.target.value);
+                  if (e.target.value) {
+                    setErrors((prev) => ({ ...prev, idCard: '' }));
+                  }
+                }}
+                className={`w-full p-4 bg-softblue/5 rounded text-oceanblue border placeholder-softblue/60 ${
                   errors.idCard ? 'border-red-500' : 'border-softblue'
                 }`}
-                onClick={() => fileInputRef.current.click()}
-              >
-                <img src={AttachFile} alt="Attach file" className="w-5 h-5 mr-2" />
-                <span className="text-sm truncate">{idCard || 'Insert card'}</span>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={(e) => {
-                    handleFileChange(e);
-                    setErrors((prev) => ({ ...prev, idCard: '' }));
-                  }}
-                />
-              </div>
+              />
               {errors.idCard && <p className="text-red-500 text-sm mt-1">{errors.idCard}</p>}
             </div>
 
-            {/* Password input */}
-            <div className="mb-8">
+            {/* Password input with show/hide */}
+            <div className="mb-8 relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -147,10 +136,17 @@ export default function QuizLoginPage() {
                   }
                 }}
                 placeholder="Enter your password"
-                className={`w-full p-4 bg-softblue/5 rounded text-oceanblue border placeholder-softblue/60 ${
+                className={`w-full p-4 pr-12 bg-softblue/5 rounded text-oceanblue border placeholder-softblue/60 ${
                   errors.password ? 'border-red-500' : 'border-softblue'
                 }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-oceanblue text-sm"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
 

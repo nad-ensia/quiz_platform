@@ -1,7 +1,6 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QMark from '../../assets/images/qmark_login.svg';
-import AttachFile from '../../assets/attach_file.svg';
 
 export default function QuizSignUpPage() {
   const [email, setEmail] = useState('');
@@ -13,7 +12,9 @@ export default function QuizSignUpPage() {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const fileInputRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
   const roles = ['Student', 'Teacher'];
 
@@ -32,13 +33,6 @@ export default function QuizSignUpPage() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setIdCard(file.name);
-    }
   };
 
   const handleSignUp = () => {
@@ -133,40 +127,54 @@ export default function QuizSignUpPage() {
               {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
             </div>
 
-            <div className="mb-6">
+            {/* Password Input with Show/Hide */}
+            <div className="mb-6 relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-4 mb-4 bg-softblue/10 rounded text-oceanblue border border-softblue"
+                className="w-full p-4 pr-10 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-4 text-softblue select-none"
+                tabIndex={-1}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
               {errors.password && <p className="text-red-500 text-sm -mt-2 mb-2">{errors.password}</p>}
+            </div>
 
+            {/* Confirm Password Input with Show/Hide */}
+            <div className="mb-6 relative">
               <input
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-4 bg-softblue/10 rounded text-oceanblue border border-softblue"
+                className="w-full p-4 pr-10 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3 top-4 text-softblue select-none"
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? 'Hide' : 'Show'}
+              </button>
               {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
 
-            <div className="mb-8">
-              <div
-                className="w-full p-4 bg-softblue/5 rounded flex items-center text-oceanblue border border-softblue cursor-pointer"
-                onClick={() => fileInputRef.current.click()}
-              >
-                <img src={AttachFile} alt="Attach file" className="w-5 h-5 mr-2" />
-                <span className="text-sm truncate">{idCard || 'Insert card'}</span>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-              </div>
+            <div className="mb-6">
+              <input
+                type="password"
+                placeholder="RFID"
+                value={idCard}
+                onChange={(e) => setIdCard(e.target.value)}
+                className="w-full p-4 bg-softblue/10 rounded text-oceanblue border border-softblue"
+              />
               {errors.idCard && <p className="text-red-500 text-sm mt-1">{errors.idCard}</p>}
             </div>
 
