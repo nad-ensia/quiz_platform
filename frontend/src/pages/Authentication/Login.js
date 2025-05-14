@@ -1,15 +1,17 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // ⬅️ for navigation
+import { useNavigate, Link } from 'react-router-dom';
 import QMark from '../../assets/images/qmark_login.svg';
 import AttachFile from '../../assets/attach_file.svg';
 
 export default function QuizLoginPage() {
   const [role, setRole] = useState('');
   const [idCard, setIdCard] = useState('');
+  const [password, setPassword] = useState('');
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const [errors, setErrors] = useState({ role: '', idCard: '', password: '' });
 
   const fileInputRef = useRef(null);
-  const navigate = useNavigate(); // ⬅️ use navigation hook
+  const navigate = useNavigate();
   const roles = ['Student', 'Teacher'];
 
   const handleFileChange = (e) => {
@@ -19,11 +21,18 @@ export default function QuizLoginPage() {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {
+      role: role ? '' : 'Role is required.',
+      idCard: idCard ? '' : 'ID card is required.',
+      password: password ? '' : 'Password is required.'
+    };
+    setErrors(newErrors);
+    return Object.values(newErrors).every((e) => e === '');
+  };
+
   const handleLogin = () => {
-    if (!role || !idCard) {
-      alert('Please select a role and upload your ID card.');
-      return;
-    }
+    if (!validateForm()) return;
 
     if (role === 'Student') {
       navigate('/student');
@@ -34,14 +43,11 @@ export default function QuizLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Main content */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Background pattern */}
         <div className="absolute top-0 right-0 w-2/3 h-full">
           <img src={QMark} alt="Question marks pattern" className="object-cover w-full h-full" />
         </div>
 
-        {/* Blue triangle */}
         <div
           className="absolute bottom-0 left-0 w-full h-full shadow-2xl"
           style={{
@@ -50,21 +56,19 @@ export default function QuizLoginPage() {
           }}
         ></div>
 
-        {/* Content */}
         <div className="relative z-10 flex flex-col items-center pt-16 w-full">
-          {/* Title */}
           <h1 className="text-title text-oceanblue font-bold mb-8">
             Online Quizzes Platform
           </h1>
 
-          {/* Login card */}
           <div className="bg-white shadow-2xl rounded-lg p-8 w-full max-w-md">
             <h2 className="text-subtitle text-softblue text-center mb-4">Login</h2>
 
             <p className="text-center text-softblue mb-8">
-              You must choose your <span className="font-semibold text-oceanblue">role</span> and
-              insert your <span className="font-semibold text-oceanblue">ID card</span> so you can
-              access the online quizzes platform!
+              You must choose your <span className="font-semibold text-oceanblue">role</span>,
+              insert your <span className="font-semibold text-oceanblue">ID card</span>, and enter
+              your <span className="font-semibold text-oceanblue">password</span> to access the
+              online quizzes platform!
             </p>
 
             <div className="border-t border-softblue/30 my-6"></div>
@@ -72,7 +76,9 @@ export default function QuizLoginPage() {
             {/* Role selector */}
             <div className="mb-6 relative">
               <button
-                className="w-full p-4 bg-softblue/10 rounded flex items-center justify-between text-oceanblue border border-softblue"
+                className={`w-full p-4 bg-softblue/10 rounded flex items-center justify-between text-oceanblue border ${
+                  errors.role ? 'border-red-500' : 'border-softblue'
+                }`}
                 onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
               >
                 <span>{role || 'Role'}</span>
@@ -94,6 +100,7 @@ export default function QuizLoginPage() {
                       className="p-3 hover:bg-softblue/15 cursor-pointer"
                       onClick={() => {
                         setRole(r);
+                        setErrors((prev) => ({ ...prev, role: '' }));
                         setIsRoleDropdownOpen(false);
                       }}
                     >
@@ -102,12 +109,15 @@ export default function QuizLoginPage() {
                   ))}
                 </div>
               )}
+              {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
             </div>
 
             {/* ID Card file input */}
-            <div className="mb-8">
+            <div className="mb-6">
               <div
-                className="w-full p-4 bg-softblue/5 rounded flex items-center text-oceanblue border border-softblue cursor-pointer"
+                className={`w-full p-4 bg-softblue/5 rounded flex items-center text-oceanblue border cursor-pointer ${
+                  errors.idCard ? 'border-red-500' : 'border-softblue'
+                }`}
                 onClick={() => fileInputRef.current.click()}
               >
                 <img src={AttachFile} alt="Attach file" className="w-5 h-5 mr-2" />
@@ -116,20 +126,51 @@ export default function QuizLoginPage() {
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  onChange={handleFileChange}
+                  onChange={(e) => {
+                    handleFileChange(e);
+                    setErrors((prev) => ({ ...prev, idCard: '' }));
+                  }}
                 />
               </div>
+              {errors.idCard && <p className="text-red-500 text-sm mt-1">{errors.idCard}</p>}
+            </div>
+
+            {/* Password input */}
+            <div className="mb-8">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (e.target.value) {
+                    setErrors((prev) => ({ ...prev, password: '' }));
+                  }
+                }}
+                placeholder="Enter your password"
+                className={`w-full p-4 bg-softblue/5 rounded text-oceanblue border placeholder-softblue/60 ${
+                  errors.password ? 'border-red-500' : 'border-softblue'
+                }`}
+              />
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
 
             {/* Login button */}
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-4">
               <button
                 onClick={handleLogin}
-                className="px-6 py-3 bg-transparent hover:bg-softblue/15 text-softblue rounded-md hover:bg-opacity-90 transition-colors border-softblue border-solid border-[1px]"
+                className="px-6 py-3 bg-transparent hover:bg-softblue/15 text-softblue rounded-md border-softblue border-[1px] transition-colors"
               >
                 Login Now
               </button>
             </div>
+
+            {/* Sign up link */}
+            <p className="text-center text-sm text-softblue">
+              Don't have an account?{' '}
+              <Link to="/" className="text-oceanblue hover:underline">
+                Sign up
+              </Link>
+            </p>
           </div>
         </div>
       </div>
