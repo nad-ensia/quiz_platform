@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import SignUpPage from './pages/Authentication/Signup';
 import LoginPage from './pages/Authentication/Login';
 import AccessPopup from './components/PopUp';
 import TeacherHome from './pages/Teacher/welcome_page';
@@ -15,13 +16,15 @@ import MetaData from './components/Teacher/quiz_metadata';
 import QuizHeader from './components/Teacher/quiz_header';
 
 
+
 import './index.css';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<SignUpPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/teacher" element={<TeacherHome />} />
         <Route path="/student" element={<StudentHome />} />
         <Route path="/teacher_view_quizzes" element={<TeacherViewQuizzes />} />
