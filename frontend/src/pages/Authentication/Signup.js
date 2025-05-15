@@ -1,45 +1,98 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QMark from '../../assets/images/qmark_login.svg';
+import axios from 'axios';
 
 export default function QuizSignUpPage() {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [role, setRole] = useState('');
-  const [idCard, setIdCard] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [userRole, setUserRole] = useState('');
+  const [rfidCode, setRfidCode] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [apiError, setApiError] = useState('');  // Dedicated state for API errors
 
   const navigate = useNavigate();
-  const roles = ['Student', 'Teacher'];
+  const availableRoles = ['Student', 'Teacher'];
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!email) newErrors.email = 'Email is required.';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid.';
+    if (!userEmail) newErrors.email = 'Email is required.';
+    else if (!/\S+@\S+\.\S+/.test(userEmail)) newErrors.email = 'Email is invalid.';
 
-    if (!name) newErrors.name = 'Name is required.';
-    if (!role) newErrors.role = 'Role is required.';
-    if (!idCard) newErrors.idCard = 'ID Card is required.';
-    if (!password) newErrors.password = 'Password is required.';
-    if (password.length < 6) newErrors.password = 'Password must be at least 6 characters.';
-    if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match.';
+    if (!fullName) newErrors.name = 'Name is required.';
+    if (!userRole) newErrors.role = 'Role is required.';
+    if (!rfidCode) newErrors.idCard = 'ID Card is required.';
+    if (!userPassword) newErrors.password = 'Password is required.';
+    if (userPassword.length < 6) newErrors.password = 'Password must be at least 6 characters.';
+    if (userPassword !== repeatPassword) newErrors.confirmPassword = 'Passwords do not match.';
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!validateForm()) return;
+    
+    // Clear previous API errors
+    setApiError('');
 
-    if (role === 'Student') navigate('/student');
-    else if (role === 'Teacher') navigate('/teacher');
+    try {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/signup`, {
+        email: userEmail,
+        full_name: fullName,
+        role: userRole.toLowerCase(),
+        rfid: rfidCode,
+        password: userPassword,
+        confirm_password: repeatPassword,
+      });
+
+      console.log('Sign up successful:', res.data);
+      navigate('/login');
+
+    } catch (err) {
+      console.error('Sign up failed:', err.response?.data || err.message);
+      
+      // Handle specific error messages from backend
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // Set specific error messages based on error type
+        if (errorData.error === 'RFID not found') {
+          setApiError('This RFID card is not registered in our system. Please contact an administrator.');
+        } 
+        else if (errorData.error === 'Role mismatch') {
+          setApiError(`The selected role doesn't match the role assigned to this RFID card.`);
+        }
+        else if (errorData.error === 'User already signed up') {
+          setApiError('This RFID card is already associated with an account. Please login instead.');
+        }
+        else if (errorData.error === 'Passwords do not match') {
+          setApiError('The password confirmation does not match your password.');
+        }
+        else if (errorData.error === 'Missing fields') {
+          setApiError(`Please fill in all required fields: ${errorData.missing?.join(', ')}`);
+        }
+        else if (errorData.error?.includes('Database error')) {
+          setApiError('A database error occurred. Please try again later.');
+        }
+        else if (errorData.error === 'Email already exists') {
+          setApiError('This email address is already registered. Please use a different email or login to your existing account.');
+        }
+        else {
+          // Fall back to the error message from the server if available
+          setApiError(errorData.error || 'Signup failed. Please try again.');
+        }
+      } else {
+        // Network or other errors
+        setApiError('Connection error. Please check your internet connection and try again.');
+      }
+    }
   };
 
   return (
@@ -70,36 +123,42 @@ export default function QuizSignUpPage() {
 
             <div className="border-t border-softblue/30 my-6"></div>
 
+            {apiError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+                <p>{apiError}</p>
+              </div>
+            )}
+
             <div className="mb-6">
               <input
                 type="email"
                 placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
                 className="w-full p-4 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
             </div>
 
             <div className="mb-6">
               <input
                 type="text"
                 placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 className="w-full p-4 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              {formErrors.name && <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>}
             </div>
 
             <div className="mb-6 relative">
               <button
                 className="w-full p-4 bg-softblue/10 rounded flex items-center justify-between text-oceanblue border border-softblue"
-                onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                <span>{role || 'Role'}</span>
+                <span>{userRole || 'Role'}</span>
                 <svg
-                  className={`w-4 h-4 transform ${isRoleDropdownOpen ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -108,15 +167,15 @@ export default function QuizSignUpPage() {
                 </svg>
               </button>
 
-              {isRoleDropdownOpen && (
+              {isDropdownOpen && (
                 <div className="absolute left-0 right-0 mt-1 bg-white border border-softblue/15 rounded shadow-lg z-20">
-                  {roles.map((r) => (
+                  {availableRoles.map((r) => (
                     <div
                       key={r}
                       className="p-3 hover:bg-softblue/15 cursor-pointer"
                       onClick={() => {
-                        setRole(r);
-                        setIsRoleDropdownOpen(false);
+                        setUserRole(r);
+                        setIsDropdownOpen(false);
                       }}
                     >
                       {r}
@@ -124,58 +183,58 @@ export default function QuizSignUpPage() {
                   ))}
                 </div>
               )}
-              {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
+              {formErrors.role && <p className="text-red-500 text-sm mt-1">{formErrors.role}</p>}
             </div>
 
-            {/* Password Input with Show/Hide */}
             <div className="mb-6 relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={isPasswordVisible ? 'text' : 'password'}
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={userPassword}
+                onChange={(e) => setUserPassword(e.target.value)}
                 className="w-full p-4 pr-10 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
+                onClick={() => setIsPasswordVisible((prev) => !prev)}
                 className="absolute right-3 top-4 text-softblue select-none"
                 tabIndex={-1}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                {isPasswordVisible ? 'Hide' : 'Show'}
               </button>
-              {errors.password && <p className="text-red-500 text-sm -mt-2 mb-2">{errors.password}</p>}
+              {formErrors.password && <p className="text-red-500 text-sm -mt-2 mb-2">{formErrors.password}</p>}
             </div>
 
-            {/* Confirm Password Input with Show/Hide */}
             <div className="mb-6 relative">
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={isConfirmVisible ? 'text' : 'password'}
                 placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={repeatPassword}
+                onChange={(e) => setRepeatPassword(e.target.value)}
                 className="w-full p-4 pr-10 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
               <button
                 type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                onClick={() => setIsConfirmVisible((prev) => !prev)}
                 className="absolute right-3 top-4 text-softblue select-none"
                 tabIndex={-1}
               >
-                {showConfirmPassword ? 'Hide' : 'Show'}
+                {isConfirmVisible ? 'Hide' : 'Show'}
               </button>
-              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+              {formErrors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.confirmPassword}</p>
+              )}
             </div>
 
             <div className="mb-6">
               <input
                 type="password"
                 placeholder="RFID"
-                value={idCard}
-                onChange={(e) => setIdCard(e.target.value)}
+                value={rfidCode}
+                onChange={(e) => setRfidCode(e.target.value)}
                 className="w-full p-4 bg-softblue/10 rounded text-oceanblue border border-softblue"
               />
-              {errors.idCard && <p className="text-red-500 text-sm mt-1">{errors.idCard}</p>}
+              {formErrors.idCard && <p className="text-red-500 text-sm mt-1">{formErrors.idCard}</p>}
             </div>
 
             <div className="flex justify-center mb-4">

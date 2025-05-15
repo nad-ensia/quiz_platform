@@ -41,8 +41,6 @@ function App() {
         <Route path="/quiz/quiz-results" element={<ViewQuizResults />} />
         <Route path="/student/new-quizzes" element={<ViewNewQuizzes />} />
         <Route path="/teacher/quiz-answers" element={<QuizAnswers />} />
-
-
       </Routes>
     </Router>
   );

@@ -5,32 +5,72 @@ import AttachFile from '../../assets/attach_file.svg';
 
 export default function QuizLoginPage() {
   const [role, setRole] = useState('');
-  const [idCard, setIdCard] = useState('');
+  const [rfid, setrfid] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const [errors, setErrors] = useState({ role: '', idCard: '', password: '' });
+  const [errors, setErrors] = useState({ role: '', rfid: '', password: '', backend: '' });
 
   const navigate = useNavigate();
   const roles = ['Student', 'Teacher'];
 
   const validateForm = () => {
     const newErrors = {
-      role: role ? '' : 'Role is required.',
-      idCard: idCard ? '' : 'ID card is required.',
-      password: password ? '' : 'Password is required.'
+      role: role.toLowerCase() ? '' : 'Role is required.',
+      rfid: rfid ? '' : 'ID card is required.',
+      password: password ? '' : 'Password is required.',
+      backend: ''
     };
     setErrors(newErrors);
     return Object.values(newErrors).every((e) => e === '');
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!validateForm()) return;
 
-    if (role === 'Student') {
-      navigate('/student');
-    } else if (role === 'Teacher') {
-      navigate('/teacher');
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          role: role.toLowerCase(),
+          rfid,
+          password
+        })
+      });
+
+      if (!response.ok) {
+        // Try to parse error message from backend
+        const data = await response.json();
+
+        // Example backend error messages you might receive:
+        // "incorrect password", "account/rfid does not exist", "no match between roles and credentials"
+        const backendMessage = data.message || 'Login failed. Please check your credentials.';
+
+        setErrors((prev) => ({
+          ...prev,
+          backend: backendMessage
+        }));
+        return;
+      }
+
+      // Clear any previous backend errors
+      setErrors((prev) => ({ ...prev, backend: '' }));
+
+      // If successful login, navigate based on role
+      if (role === 'Student') {
+        navigate('/student');
+      } else if (role === 'Teacher') {
+        navigate('/teacher');
+      }
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        backend: 'An error occurred during login. Please try again later.'
+      }));
+      console.error('Login error:', error);
     }
   };
 
@@ -110,18 +150,18 @@ export default function QuizLoginPage() {
               <input
                 type="password"
                 placeholder="RFID"
-                value={idCard}
+                value={rfid}
                 onChange={(e) => {
-                  setIdCard(e.target.value);
+                  setrfid(e.target.value);
                   if (e.target.value) {
-                    setErrors((prev) => ({ ...prev, idCard: '' }));
+                    setErrors((prev) => ({ ...prev, rfid: '' }));
                   }
                 }}
                 className={`w-full p-4 bg-softblue/5 rounded text-oceanblue border placeholder-softblue/60 ${
-                  errors.idCard ? 'border-red-500' : 'border-softblue'
+                  errors.rfid ? 'border-red-500' : 'border-softblue'
                 }`}
               />
-              {errors.idCard && <p className="text-red-500 text-sm mt-1">{errors.idCard}</p>}
+              {errors.rfid && <p className="text-red-500 text-sm mt-1">{errors.rfid}</p>}
             </div>
 
             {/* Password input with show/hide */}
@@ -149,6 +189,13 @@ export default function QuizLoginPage() {
               </button>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
+
+            {/* Backend error message */}
+            {errors.backend && (
+              <p className="text-red-600 text-center text-sm mb-4 font-semibold">
+                {errors.backend}
+              </p>
+            )}
 
             {/* Login button */}
             <div className="flex justify-center mb-4">
