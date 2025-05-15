@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import SignUpPage from './pages/Authentication/Signup';
 import LoginPage from './pages/Authentication/Login';
 import AccessPopup from './components/PopUp';
 import TeacherHome from './pages/Teacher/welcome_page';
@@ -17,13 +18,15 @@ import ViewQuizResults from './pages/Student/view_quiz_results';
 import ViewNewQuizzes from './pages/Student/view_new_quizzes';
 import QuizAnswers from './pages/Teacher/quiz_answers';
 
+
 import './index.css';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<SignUpPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/teacher" element={<TeacherHome />} />
         <Route path="/student" element={<StudentHome />} />
         <Route path="/teacher_view_quizzes" element={<TeacherViewQuizzes />} />
@@ -38,8 +41,6 @@ function App() {
         <Route path="/quiz/quiz-results" element={<ViewQuizResults />} />
         <Route path="/student/new-quizzes" element={<ViewNewQuizzes />} />
         <Route path="/teacher/quiz-answers" element={<QuizAnswers />} />
-
-
       </Routes>
     </Router>
   );
